@@ -2,30 +2,87 @@
 
 {% block content %}
 
+<div class="ui container">
+    {% if current_user.is_authenticated %}
+    <p>Logged in as {{ current_user.name }}. <a href="{{ url_for('logout') }}">Log out</a></p>
+    {% else %}
+    <p>Not logged in. <a href="{{ url_for('login') }}">Log in</a></p>
+    {% endif %}
+</div>
+
+
+<p>Сортировка:</p>
+<div class="ui compact menu">
+    <div class="ui simple dropdown item">
+        {{ sort_by|capitalize if sort_by != 'id' else 'ID' }} <i class="dropdown icon"></i>
+        <div class="menu">
+            <a class="item" href="{{ url_for('home', page=pagination.page, sort_by='user_name', order=order) }}">По имени пользователя</a>
+            <a class="item" href="{{ url_for('home', page=pagination.page, sort_by='email', order=order) }}">По Email</a>
+            <a class="item" href="{{ url_for('home', page=pagination.page, sort_by='title', order=order) }}">По названию задачи</a>
+            <a class="item" href="{{ url_for('home', page=pagination.page, sort_by='id', order=order) }}">По ID</a>
+        </div>
+    </div>
+</div>
+<a class="ui icon button" href="{{ url_for('home', page=pagination.page, sort_by=sort_by, order='desc' if order != 'desc' else 'asc', ) }}">
+    <i class="{{ 'angle up icon' if order != 'desc' else 'angle down icon' }}"></i>
+</a>
 <div style="margin-top: 50px;" class="ui container">
     <h1 class="ui center aligned header">Мой менеджер задач</h1>
 
     <form class="ui form" action="/add" method="post">
+        
+        <input type="hidden" name="csrf_token" value="{{ form.csrf_token._value() }}">
+        <div class="field">
+            <label>Имя пользователя</label>
+            <input type="text" name="user_name" placeholder="Введите имя пользователя"><br>
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <input type="text" name="email" placeholder="Введите email"><br>
+        </div>
         <div class="field">
             <label>Новая задача</label>
             <input type="text" name="title" placeholder="Введите название задачи"><br>
         </div>
         <button class="ui teal basic button" type="submit">Добавить</button>
     </form>
-
+        
 {% for todo in todo_list %}
 <div class="ui segment">
-    <p class="ui big header">№{{ todo.id }} {{ todo.title }}</p>
+    <p class="ui big header">Имя пользователя: {{ todo.user_name }} E-mail: {{ todo.email }} №{{ todo.id }} Задача: {{ todo.title }}</p>
+
+        <!-- Новая строка для отображения статуса редактирования администратором -->
+    <!-- Новая строка для отображения статуса редактирования администратором -->
+    {% if current_user.is_authenticated %}
+    {% if todo.edited_by_admin %}
+    <span class="ui teal label">Отредактировано администратором</span>
+    {% else %}
+    <span class="ui gray label">Не отредактировано администратором</span>
+    {% endif %}
+    {% endif %}
 
     {% if todo.is_complete == False %}
     <span class="ui gray label">Не завершено</span>
-    <a class="ui primary basic button" href="/update/{{ todo.id }}">Закрыть</a>
+        {% if current_user.is_authenticated %}
+        <a class="ui primary basic button" href="/update/{{ todo.id }}">Закрыть</a>
+        {% endif %}
     {% else %}
     <span class="ui green label">Завершено</span>
-    <a class="ui blue button" href="/update/{{ todo.id }}">Открыть</a>
+        {% if current_user.is_authenticated %}
+        <a class="ui blue button" href="/update/{{ todo.id }}">Открыть</a>
+        {% endif %}
     {% endif %}
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('edit_task', task_id=todo.id) }}">Редактировать</a>
     <a class="ui negative basic button" href="/delete/{{ todo.id }}">Удалить</a>
+    {% endif %}
 </div>
 {% endfor %}
+{% if pagination.has_prev %}
+<a class="ui button" href="{{ url_for('home', page=pagination.prev_num, sort_by=sort_by, order=order) }}">Предыдущая страница</a>
+{% endif %}
+{% if pagination.has_next %}
+<a class="ui button" href="{{ url_for('home', page=pagination.next_num, sort_by=sort_by, order=order) }}">Следующая страница</a>
+{% endif %}
 </div>
 {% endblock content %}

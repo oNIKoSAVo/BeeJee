@@ -1,0 +1,13 @@
+<h1>Edit Task</h1>
+
+<form method="post">
+    <label for="user_name">User Name:</label><br>
+    <input type="text" id="user_name" name="user_name" value="{{ task.user_name }}"><br>
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email" value="{{ task.email }}"><br>
+    <label for="title">Task Text:</label><br>
+    <input type="text" id="title" name="title" value="{{ task.title }}"><br>
+    <input type="submit" value="Save Changes">
+</form>
+
+<a href="{{ url_for('home') }}">Back</a>

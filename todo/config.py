@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # /// = relative path, //// = absolute path
+SECRET_KEY = os.urandom(24)
 FLASK_APP = os.getenv('FLASK_APP')
 FLASK_ENV = os.getenv('FLASK_ENV')
 SQLALCHEMY_DATABASE_URI = os.getenv('DB_URL')
