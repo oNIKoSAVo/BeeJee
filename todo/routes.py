@@ -1,22 +1,36 @@
 from functools import wraps
-from flask import Flask, jsonify, render_template, request, session, url_for, redirect, flash
+from flask import (
+    Flask,
+    jsonify,
+    render_template,
+    request,
+    session,
+    url_for,
+    redirect,
+    flash,
+)
+from flask_cors import CORS, cross_origin
 from flask_login import login_required, login_user, logout_user, current_user
 from flask_migrate import Migrate
+from todo.functions.func import validate_todo
 from todo.forms import AddTaskForm, LoginForm
 
-from todo.models import ToDo,User, db
-
+from todo.models import ToDo, User, db
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_pyfile('config.py')
+    CORS(app, supports_credentials=True, 
+  resources={r'*': {'origins': 'http://localhost:3000'}})
+    # CORS(app, resources={r"/*": {"methods": "*"}})
+    app.config.from_pyfile("config.py")
     db.init_app(app)
     return app
 
 
 app = create_app()
 migrate = Migrate(app, db)
+
 
 def save_state_to_session(f):
     @wraps(f)
@@ -25,14 +39,14 @@ def save_state_to_session(f):
         session["sort_by"] = request.args.get("sort_by", default="id")
         session["order"] = request.args.get("order", default="asc")
         return f(*args, **kwargs)
+
     return decorated_function
 
-def request_wants_json():
-    best = request.accept_mimetypes.best_match(['application/json', 'text/html'])
-    return best == 'application/json' and request.accept_mimetypes[best] > request.accept_mimetypes['text/html']
 
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route("/", methods=["GET", "POST"])
+@cross_origin()
 def home():
     form = AddTaskForm()
 
@@ -44,123 +58,120 @@ def home():
         todos_query = ToDo.query.order_by(getattr(ToDo, sort_by).desc())
     else:
         todos_query = ToDo.query.order_by(getattr(ToDo, sort_by))
-      
+
     pagination = todos_query.paginate(page, 3, False)
     todo_list = pagination.items
-    
-    if form.validate_on_submit():
+
+    if request.method == "POST":
+        data = request.get_json()
+        if not data or "user_name" not in data or "email" not in data or "title" not in data:
+            return jsonify({"error": "Bad Request"}), 400
+
         new_task = ToDo(
-            user_name=form.user_name.data,
-            email=form.email.data,
-            title=form.title.data
+            user_name=data["user_name"], email=data["email"], title=data["title"]
         )
         db.session.add(new_task)
         db.session.commit()
-        return redirect('/')  # Если прошла валидация, то перенаправляем на главную
-
-    if request_wants_json():
-        todos = [todo.to_dict() for todo in todo_list]
-
-        # Отправить данные в формате JSON
-        return jsonify({
-            'todos': todos,
-            'pagination': {
-                'page': pagination.page,
-                'total_pages': pagination.pages,
-                'total_items': pagination.total,
-            }
-        })
-    else:
-        # Это блок кода, который рендерит HTML-шаблон
-        return render_template('todo/index.html', form=form, todo_list=todo_list, sort_by=sort_by, order=order, pagination=pagination)
-
-
-@app.route('/add', methods=['POST'])
-@save_state_to_session
-def add_task():
-    form = AddTaskForm()  # Создайте экземпляр формы
-    
-    # Если форма была отправлена и прошла валидацию, добавьте задачу в базу данных
-    if form.validate_on_submit():
-        new_task = ToDo(
-            user_name=form.user_name.data,
-            email=form.email.data,
-            title=form.title.data
-        )
-        db.session.add(new_task)
-        db.session.commit()
-        return redirect('/')
-    
-    # Если форма не прошла валидацию, верните пользователю список ошибок
-    else:
-        return "Errors: {}".format(form.errors)
-# @app.post('/add')
-# def add():
-#     title = request.form.get('title')
-#     new_todo = ToDo(title=title, is_complete=False)
-#     db.session.add(new_todo)
-#     db.session.commit()
-#     return redirect(url_for('home'))
-
-
-@app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
-@login_required
-@save_state_to_session
-def edit_task(task_id):
-    task = ToDo.query.get(task_id)
-    db.session.refresh(task)  # Обновляем задачу перед редактированием
-    if request.method == 'POST':
-        if (task.user_name != request.form['user_name'] or
-            task.email != request.form['email'] or
-            task.title != request.form['title']):
-            task.edited_by_admin = True
         
-        task.user_name = request.form['user_name']
-        task.email = request.form['email']
-        task.title = request.form['title']
-        db.session.commit()  # Применяем обновление
-        return redirect(url_for('home'))
-    return render_template('todo/edit_task.html', task=task) 
+        return jsonify(new_task.to_dict()), 201
 
-@app.get('/update/<int:todo_id>')
+    todos = [todo.to_dict() for todo in todo_list]
+
+    return jsonify({
+        'todos': todos,
+        'pagination': {
+            'page': pagination.page,
+            'total_pages': pagination.pages,
+            'total_items': pagination.total,
+        }
+    })
+
+
+@app.route("/add", methods=["POST"])
+def add():
+    data = request.get_json()
+    if not validate_todo(data):
+        return jsonify({"error": "Bad Request"}), 400
+
+    new_task = ToDo(
+        user_name=data["user_name"], email=data["email"], title=data["title"]
+    )
+    db.session.add(new_task)
+    db.session.commit()
+    return jsonify(new_task.to_dict()), 201
+
+    
+
+
+@app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 @login_required
-@save_state_to_session
+@cross_origin()
+def edit_task(task_id):
+    data = request.get_json()
+    if not data or 'user_name' not in data or 'email' not in data or 'title' not in data:
+        # Вернуть ошибку если одно или несколько полей отсутствуют
+        return jsonify({'error': 'Bad Request'}), 400
+
+    task = ToDo.query.get(task_id)
+    if not task:
+        return jsonify({'error': 'Not found'}), 404
+
+    if (
+        task.user_name != data["user_name"]
+        or task.email != data["email"]
+        or task.title != data["title"]
+    ):
+        task.edited_by_admin = True
+
+    task.user_name = data["user_name"]
+    task.email = data["email"]
+    task.title = data["title"]
+
+    db.session.commit()
+    return jsonify(task.to_dict())
+
+
+@app.get("/update/<int:todo_id>")
+@login_required
 def update(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
     todo.is_complete = not todo.is_complete
     db.session.commit()
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))
 
+success = {"success": True, "message": "The task has been successfully deleted."}
+fail = {"success": False, "message": "The task was not found."}
 
-@app.get('/delete/<int:todo_id>')
+@app.route("/delete/<int:todo_id>", methods=['DELETE'])
 @login_required
-@save_state_to_session
+@cross_origin(supports_credentials=True)
 def delete(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
+    if todo is None:
+        return jsonify(fail), 404  # Если задача не найдена, возвращает код ошибки
     db.session.delete(todo)
     db.session.commit()
-    return redirect(url_for('home'))
+    return jsonify({'result': 'success'}), 200 
 
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+       return jsonify({'result': 'success', 'data': 'Already logged in'}), 200
+    data = request.get_json()
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'error': 'Bad Request'}), 400    
 
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            return redirect(url_for('home'))
-        else:
-            flash('Invalid username/password combination')
+    user = User.query.filter_by(username=data['username']).first()
+    if user and user.check_password(data['password']):
+        login_user(user, remember=True)
+        return jsonify({'result': 'success'}), 200
     else:
-      print(form.errors)  # Распечатает ошибки валидации в консоль
-            
-    return render_template('todo/login.html', form=form)
+        return jsonify({'error': 'Invalid username/password combination'}), 401
 
-@app.route('/logout')
+
+@app.route("/logout")
+@cross_origin(supports_credentials=True)
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))

@@ -1,0 +1,49 @@
+body {
+  background-color: #F5F5F5;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  background-color: #FFF;
+  padding: 30px;
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 5px;
+}
+
+.button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.todo input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.todo.complete {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
+img {
+  color: green;
+}
