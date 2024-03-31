@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, flash
+from flask_login import login_user, current_user
+from todo.forms import LoginForm
 
-from todo.models import ToDo, db
+from todo.models import ToDo,User, db
+
 
 
 def create_app():
@@ -12,6 +15,22 @@ def create_app():
 
 app = create_app()
 
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid username/password combination')
+            
+    return render_template('todo/login.html', form=form)
 
 @app.get('/')
 def home():
