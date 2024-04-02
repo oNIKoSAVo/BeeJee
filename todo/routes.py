@@ -130,13 +130,17 @@ def edit_task(task_id):
     return jsonify(task.to_dict())
 
 
-@app.get("/update/<int:todo_id>")
+@app.route("/update/<int:todo_id>", methods=["GET", "POST"])
 @login_required
+@cross_origin(supports_credentials=True)
 def update(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
     todo.is_complete = not todo.is_complete
-    db.session.commit()
-    return redirect(url_for("home"))
+    try:
+        db.session.commit()
+        return jsonify({'result': 'success'}), 200
+    except:
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 success = {"success": True, "message": "The task has been successfully deleted."}
 fail = {"success": False, "message": "The task was not found."}

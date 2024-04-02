@@ -21,6 +21,7 @@ class ToDo(db.Model):
             "email": self.email,
             "title": self.title,
             "is_complete": self.is_complete,
+            "edited_by_admin": self.edited_by_admin,
         }
 
 

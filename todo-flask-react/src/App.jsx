@@ -77,23 +77,31 @@ function App() {
   }, [page, sortBy, order]);
 
   const toggleTodo = (changedTodo) => {
-    fetch(`http://localhost:5000/${changedTodo.id}`, {
-      method: "PUT",
+    fetch(`http://localhost:5000/update/${changedTodo.id}`, {
+      method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ is_complete: !changedTodo.is_complete }),
     })
-      .then((response) => response.json())
-      .then(() => {
-        setTodos(
-          todos.map((todo) =>
-            todo.id === changedTodo.id
-              ? { ...todo, is_complete: !todo.is_complete }
-              : todo
-          )
-        );
+      .then((response) => {
+        if (!response.ok) {
+          throw response;
+        }
+        return response.json();
+      })
+      .then((data) => {
+       
+
+        if (data.result === "success") {
+          const updatedTodos = todos.map((todo) =>
+            todo.id === changedTodo.id ? { ...todo, is_complete: !todo.is_complete } : todo
+          );
+          setTodos(updatedTodos);      
+        } else {
+          alert("Произошла ошибка при изменении завершено/не завершено");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        alert("Произошла ошибка при изменении ToDo");
       });
   };
 
