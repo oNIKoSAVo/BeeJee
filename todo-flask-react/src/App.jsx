@@ -118,7 +118,13 @@ function App() {
       })
       .then((data) => {
         if (data.result === "success") {
+          const remainingTodos = todos.filter((todo) => todo.id !== id);
           setTodos(todos.filter((todo) => todo.id !== id));
+
+          if (remainingTodos.length === 0 && page > 1) {
+            setPage(page - 1);
+          }
+
           alert("ToDo был успешно удален");
         } else {
           alert("Произошла ошибка при удалении ToDo");
