@@ -26,19 +26,15 @@ const Login = ({ onLogin }) => {
       credentials: 'include',
       body: JSON.stringify(credentials),
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
-          // Бросаем ошибку, если сервер вернул статус отличный от 2xx
-          return response.json().then((error) => {
-            throw new Error(error.error); // Вместо response.statusText используем сообщение об ошибке от сервера
-          });
+          const error = await response.json();
+          throw new Error(error.error);
         }
         return response.json();
       })
       .then((data) => {
         onLogin(credentials.username);
-        console.log(data)
-        console.log(credentials.username)
         navigate('/');
       })
       .catch((error) => {
@@ -67,7 +63,7 @@ const Login = ({ onLogin }) => {
       required
       style={{ margin: '10px 0', padding: '10px', fontSize: '16px'}}
     />
-    <button type="submit" style={{ padding: '10px', fontSize: '16px', cursor: 'pointer', background: 'cyan' }}>Log in</button>
+    <button type="submit" style={{ padding: '10px', fontSize: '16px', cursor: 'pointer'}}>Войти</button>
     {error && <div style={{ color: "red", marginTop: '10px', textAlign: 'center' }}>{error}</div>}{" "}
   </form>
   );

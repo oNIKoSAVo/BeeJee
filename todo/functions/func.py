@@ -5,7 +5,7 @@ def validate_email(email):
 
 def validate_todo(data):
     if not data or not validate_email(data.get('email', '')):
-        return False
+        return "Неверно набран email"
     if not data.get('user_name') or not data.get('email') or not data.get('title'):
-        return False
-    return True
+        return "Не все поля заполнены"
+    return "success"

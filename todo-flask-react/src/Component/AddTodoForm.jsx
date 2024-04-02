@@ -7,14 +7,20 @@ const AddTodoForm = ({ onNewTodo }) => {
     user_name: "",
     email: "",
   });
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     setNewTodo({ ...newTodo, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!newTodo.title || !newTodo.user_name || !newTodo.email) return;
+    if (!newTodo.title || !newTodo.user_name || !newTodo.email) {
+      setError("Не все поля заполнены!")
+      return;
+    }
 
     fetch("http://localhost:5000/add", {
       method: "POST",
@@ -25,29 +31,27 @@ const AddTodoForm = ({ onNewTodo }) => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Проверьте поля ");
+          throw new Error("Проверьте поля на правильность ввода!");
         }
         return response.json();
       })
       .then((data) => {
         onNewTodo(data);
         setNewTodo({ title: "", user_name: "", email: "" });
+        alert("Запись успешно добавлена!");
       })
-      .catch((e) =>
-        alert("There was a problem with your fetch operation: " + e.message)
-      );
+      .catch((e) => setError(e.message));
   };
-  const [showForm, setShowForm] = useState(false);
 
   return (
     <>
-      <button className="btn btn--success" onClick={() => setShowForm(!showForm)}>
+      <button
+        className="btn btn--success"
+        onClick={() => setShowForm(!showForm)}
+      >
         {showForm ? "⬅ Свернуть" : "Добавить задачу ⬇"}
       </button>
-      <Collapsible
-        shown={showForm}
-        duration="0.3s"
-      >
+      <Collapsible shown={showForm} duration="0.3s">
         <div className="form-container">
           <h2>Добавить задачу</h2>
           <form onSubmit={handleSubmit}>
@@ -80,9 +84,16 @@ const AddTodoForm = ({ onNewTodo }) => {
             </label>
 
             <input className="btn btn--normal" type="submit" value="Добавить" />
+            {error && (
+        <div style={{ color: "red", marginTop: "10px", textAlign: "center" }}>
+          {error}
+        </div>
+      )}{" "}
           </form>
         </div>
+       
       </Collapsible>
+      
     </>
   );
 };

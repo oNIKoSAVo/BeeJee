@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+
 
 const SortPanel = ({ sortBy, order, onSortBy, onSortOrder }) => {
   // Список опций для сортировки

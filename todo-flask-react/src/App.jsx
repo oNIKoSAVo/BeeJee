@@ -27,7 +27,6 @@ function App() {
     setToken(true);
   };
   const onLogout = () => {
-    // Выходим из системы на сервере
     fetch("http://localhost:5000/logout", {
       credentials: "include", // Включаем отправку куки
     })
@@ -85,22 +84,21 @@ function App() {
     })
       .then((response) => {
         if (!response.ok) {
-          throw response;
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.result === "success") {
+          if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          throw new Error("Произошла ошибка при изменении!");
+        } else {
           const updatedTodos = todos.map((todo) =>
             todo.id === changedTodo.id
               ? { ...todo, is_complete: !todo.is_complete }
               : todo
           );
           setTodos(updatedTodos);
-        } else {
-          alert("Произошла ошибка при изменении завершено/не завершено");
         }
       })
+
       .catch((error) => {
         console.log(error);
         alert("Произошла ошибка при изменении ToDo");
@@ -114,20 +112,22 @@ function App() {
     })
       .then((response) => {
         if (!response.ok) {
-          throw response;
+          if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          throw new Error("Network response was not ok");
+        }
+        else {
+          alert("Задача успешно удалена!")
         }
         return response.json();
       })
       .then((data) => {
         if (data.result === "success") {
-          const remainingTodos = todos.filter((todo) => todo.id !== id);
-          setTodos(todos.filter((todo) => todo.id !== id));
+          loadTodos();
 
-          if (remainingTodos.length === 0 && page > 1) {
-            setPage(page - 1);
-          }
-
-          alert("ToDo был успешно удален");
+         
         } else {
           alert("Произошла ошибка при удалении ToDo");
         }
@@ -149,9 +149,23 @@ function App() {
     })
       .then((response) => {
         if (!response.ok) {
-          throw response;
+          if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          throw new Error("Network response was not ok");
+        } else {
+          alert("Задача успешно отредактирована!")
         }
         return response.json();
+      })
+
+     
+      .then((data) => {
+        const updatedTodos = todos.map((todo) =>
+          todo.id === data.id ? { ...todo, ...data } : todo
+        );
+        setTodos(updatedTodos);
       })
       .then((data) => {
         const updatedTodos = todos.map((todo) =>
@@ -165,18 +179,15 @@ function App() {
   };
 
   const handleSortBy = (newSortBy) => {
-    // Если пользователь нажимает на текущую опцию сортировки, мы меняем порядок
     if (newSortBy === sortBy) {
       setOrder(order === "asc" ? "desc" : "asc");
     } else {
-      // Иначе мы устанавливаем новую опцию сортировки и сбрасываем порядок на стандартный
       setSortBy(newSortBy);
       setOrder("asc");
     }
   };
 
   const handleSortOrder = () => {
-    // Переключаем порядок сортировки между 'asc' и 'desc'
     setOrder(order === "desc" ? "asc" : "desc");
   };
 
@@ -185,7 +196,7 @@ function App() {
       <>
         <div className="app-header">
           <Navbar loggedIn={token} onLogout={onLogout} />
-        
+
           <SortPanel
             sortBy={sortBy}
             order={order}
@@ -194,53 +205,87 @@ function App() {
           />
         </div>
         <div className="app">
-        <div style={{ textAlign: "center" }}>
-          <h1>Мой менеджер задач</h1>
-        </div>
+          <div style={{ textAlign: "center" }}>
+            <h1>Мой менеджер задач</h1>
+          </div>
 
-        <AddTodoForm onNewTodo={loadTodos} />
-        <TodoList
-          todos={todos}
-          onToggleTodo={toggleTodo}
-          onRemoveTodo={removeTodo}
-          onEditTodo={setEditingTodo}
-          token={token}
-        />
-        {editingTodo && (
-          <ReactModal isOpen={true} onRequestClose={() => setEditingTodo(null)}>
-            <button onClick={() => setEditingTodo(null)}>✖</button>
-            <EditTodoForm
-              todo={editingTodo}
-              onUpdate={(newData) => {
-                editTodo(editingTodo.id, {
-                  ...newData,
-                  edited_by_admin: true,
-                });
-                setEditingTodo(null);
+          <AddTodoForm onNewTodo={loadTodos} />
+          <TodoList
+            todos={todos}
+            onToggleTodo={toggleTodo}
+            onRemoveTodo={removeTodo}
+            onEditTodo={setEditingTodo}
+            token={token}
+          />
+          {editingTodo && (
+            <ReactModal
+              isOpen={true}
+              onRequestClose={() => setEditingTodo(null)}
+              style={{
+                overlay: {
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                content: {
+                  position: "relative",
+                  top: "auto",
+                  left: "auto",
+                  right: "auto",
+                  bottom: "auto",
+                  width: "40%",
+                  border: "1px solid #ccc",
+                  background: "#fff",
+                  borderRadius: "20px",
+                  padding: "20px",
+                  boxShadow: "0px 0px 10px rgba(0,0,0,0.1)",
+                },
               }}
-            />
-          </ReactModal>
-        )}
+            >
+              <button
+                onClick={() => setEditingTodo(null)}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                }}
+              >
+                ✖
+              </button>
+              <EditTodoForm
+                todo={editingTodo}
+                onUpdate={(newData) => {
+                  editTodo(editingTodo.id, {
+                    ...newData,
+                    edited_by_admin: true,
+                  });
+                  setEditingTodo(null);
+                }}
+              />
+            </ReactModal>
+          )}
 
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </div>
       </>
-      
     );
   };
 
   return (
     <>
-      
-        <Routes>
-          <Route path="/login" element={<Login onLogin={onLogin} />} />
-          <Route path="/" element={todoContent()} />
-        </Routes>
-
+      <Routes>
+        <Route path="/login" element={<Login onLogin={onLogin} />} />
+        <Route path="/" element={todoContent()} />
+      </Routes>
     </>
   );
 }

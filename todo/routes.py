@@ -89,15 +89,21 @@ def home():
 @app.route("/add", methods=["POST"])
 def add():
     data = request.get_json()
-    if not validate_todo(data):
-        return jsonify({"error": "Bad Request"}), 400
+    message = validate_todo(data)
+    if message != "success":
+        return jsonify({"error": message}), 400
 
-    new_task = ToDo(
-        user_name=data["user_name"], email=data["email"], title=data["title"]
-    )
-    db.session.add(new_task)
-    db.session.commit()
-    return jsonify(new_task.to_dict()), 201
+    try:
+        new_task = ToDo(
+            user_name=data["user_name"], email=data["email"], title=data["title"]
+        )
+        db.session.add(new_task)
+        db.session.commit()
+
+        return jsonify(new_task.to_dict()), 201
+
+    except Exception as e:
+        return jsonify({'error': 'Internal Server Error', 'message': str(e)}), 500
 
     
 
@@ -127,10 +133,10 @@ def edit_task(task_id):
     task.title = data["title"]
 
     db.session.commit()
-    return jsonify(task.to_dict())
+    return jsonify(task.to_dict()), 201
 
 
-@app.route("/update/<int:todo_id>", methods=["GET", "POST"])
+@app.route("/update/<int:todo_id>", methods=["POST"])
 @login_required
 @cross_origin(supports_credentials=True)
 def update(todo_id):
@@ -142,8 +148,7 @@ def update(todo_id):
     except:
         return jsonify({'error': 'Internal Server Error'}), 500
 
-success = {"success": True, "message": "The task has been successfully deleted."}
-fail = {"success": False, "message": "The task was not found."}
+
 
 @app.route("/delete/<int:todo_id>", methods=['DELETE'])
 @login_required
@@ -151,7 +156,7 @@ fail = {"success": False, "message": "The task was not found."}
 def delete(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
     if todo is None:
-        return jsonify(fail), 404  # Если задача не найдена, возвращает код ошибки
+        return jsonify({'error': 'Не удалось найти задачу!'}), 404  # Если задача не найдена, возвращает код ошибки
     db.session.delete(todo)
     db.session.commit()
     return jsonify({'result': 'success'}), 200 
@@ -160,7 +165,7 @@ def delete(todo_id):
 @cross_origin(supports_credentials=True)
 def login():
     if current_user.is_authenticated:
-       return jsonify({'result': 'success', 'data': 'Already logged in'}), 200
+       return jsonify({'result': 'success', 'data': 'Пользователь уже авторизирован!'}), 200
     data = request.get_json()
     if not data or 'username' not in data or 'password' not in data:
         return jsonify({'error': 'Bad Request'}), 400    
