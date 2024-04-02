@@ -30,7 +30,7 @@ const EditTodoForm = ({ todo, onUpdate }) => {
       </label>
       <label>
         Email:
-        <input type="text" name="email" onChange={handleChange} value={updatedTodo.email} />
+        <input placeholder='kolua.ua99@mail.ru' type="text" name="email" onChange={handleChange} value={updatedTodo.email} />
       </label>
       <label>
         Задача:

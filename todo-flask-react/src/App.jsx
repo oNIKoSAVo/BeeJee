@@ -6,10 +6,12 @@ import EditTodoForm from "./Component/EditTodoForm";
 import Pagination from "./Component/Pagination";
 import Login from "./Component/Login";
 import Navbar from "./Component/Navbar";
-import Modal from "react-modal";
+import ReactModal from "react-modal";
+import SortPanel from "./Component/SortPanel";
+
 import "./App.css";
 
-Modal.setAppElement("#root");
+ReactModal.setAppElement("#root");
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("username") !== null);
@@ -88,13 +90,13 @@ function App() {
         return response.json();
       })
       .then((data) => {
-       
-
         if (data.result === "success") {
           const updatedTodos = todos.map((todo) =>
-            todo.id === changedTodo.id ? { ...todo, is_complete: !todo.is_complete } : todo
+            todo.id === changedTodo.id
+              ? { ...todo, is_complete: !todo.is_complete }
+              : todo
           );
-          setTodos(updatedTodos);      
+          setTodos(updatedTodos);
         } else {
           alert("Произошла ошибка при изменении завершено/не завершено");
         }
@@ -178,63 +180,68 @@ function App() {
     setOrder(order === "desc" ? "asc" : "desc");
   };
 
+  const todoContent = () => {
+    return (
+      <>
+        <div className="app-header">
+          <Navbar loggedIn={token} onLogout={onLogout} />
+        
+          <SortPanel
+            sortBy={sortBy}
+            order={order}
+            onSortBy={handleSortBy}
+            onSortOrder={handleSortOrder}
+          />
+        </div>
+        <div className="app">
+        <div style={{ textAlign: "center" }}>
+          <h1>Мой менеджер задач</h1>
+        </div>
+
+        <AddTodoForm onNewTodo={loadTodos} />
+        <TodoList
+          todos={todos}
+          onToggleTodo={toggleTodo}
+          onRemoveTodo={removeTodo}
+          onEditTodo={setEditingTodo}
+          token={token}
+        />
+        {editingTodo && (
+          <ReactModal isOpen={true} onRequestClose={() => setEditingTodo(null)}>
+            <button onClick={() => setEditingTodo(null)}>✖</button>
+            <EditTodoForm
+              todo={editingTodo}
+              onUpdate={(newData) => {
+                editTodo(editingTodo.id, {
+                  ...newData,
+                  edited_by_admin: true,
+                });
+                setEditingTodo(null);
+              }}
+            />
+          </ReactModal>
+        )}
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+        </div>
+      </>
+      
+    );
+  };
+
   return (
-    <Router>
-      <div>
+    <>
+      
         <Routes>
           <Route path="/login" element={<Login onLogin={onLogin} />} />
-
-          <Route
-            path="/"
-            element={
-              <>
-                <Navbar
-                  loggedIn={token}
-                  sortBy={sortBy}
-                  order={order}
-                  onLogout={onLogout}
-                  onSortBy={handleSortBy}
-                  onSortOrder={handleSortOrder}
-                />
-                <h1>Мой менеджер задач</h1>
-                <AddTodoForm onNewTodo={loadTodos} />
-                <TodoList
-                  todos={todos}
-                  onToggleTodo={toggleTodo}
-                  onRemoveTodo={removeTodo}
-                  onEditTodo={setEditingTodo}
-                  token={token}
-                />
-                {editingTodo && (
-                  <Modal
-                    isOpen={true}
-                    onRequestClose={() => setEditingTodo(null)}
-                  >
-                    <button onClick={() => setEditingTodo(null)}>✖</button>
-                    <EditTodoForm
-                      todo={editingTodo}
-                      onUpdate={(newData) => {
-                        editTodo(editingTodo.id, {
-                          ...newData,
-                          edited_by_admin: true,
-                        });
-                        setEditingTodo(null);
-                      }}
-                    />
-                  </Modal>
-                )}
-
-                <Pagination
-                  page={page}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                />
-              </>
-            }
-          />
+          <Route path="/" element={todoContent()} />
         </Routes>
-      </div>
-    </Router>
+
+    </>
   );
 }
 

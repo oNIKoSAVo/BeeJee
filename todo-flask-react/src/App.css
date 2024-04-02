@@ -1,49 +1,87 @@
-body {
-  background-color: #F5F5F5;
-  padding: 30px;
-  font-family: Arial, sans-serif;
-}
-
-.container {
-  background-color: #FFF;
-  padding: 30px;
-  max-width: 500px;
+.app {
+  width: 100%;
+  max-width: 600px;
   margin: 0 auto;
-  border-radius: 5px;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.button {
-  padding: 10px 15px;
-  border: none;
+.app-header {
+  position: sticky;
+  top: 0; 
+  background-color: #ffffff; 
+  z-index: 1; 
+}
+
+.app-header-component {
+  padding: 10px;
+  border: 1px solid #ccc;
+  
+  border-radius: 10px;
+}
+
+
+.todos {
+  list-style-type: none;
+  padding: 0;
+}
+
+.todo-item {
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  border-radius: 10px; /* Добавьте это */
+}
+
+.todo-item.todo-done {
+  background-color: #d4edda;
+}
+
+.todo-item.todo-not-done {
+
+  background-color: #fcedee;
+}
+
+.form-container {
+
+  background-color: #f9f9f9;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.form-container h2 {
+  margin-bottom: 20px;
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.form-container input[type="text"] {
+  width: 100%;
+  padding: 10px;
   border-radius: 5px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.form-container input[type="submit"] {
+  display: inline-block;
+  background-color: #4caf50;
   color: white;
+  padding: 10px 20px;
+  margin-top: 10px;
+  border-radius: 5px;
+  border: none;
   cursor: pointer;
 }
 
-.button:hover {
-  opacity: 0.9;
-}
-
-.todo input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-
-.todo.complete {
-  text-decoration: line-through;
-  color: gray;
-}
-
-.error {
-  color: red;
-}
-
-.success {
-  color: green;
-}
-
-img {
-  color: green;
+.form-container input[type="submit"]:hover {
+  background-color: #45a049;
 }

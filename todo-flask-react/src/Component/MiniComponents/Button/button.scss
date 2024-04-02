@@ -1,0 +1,95 @@
+.btn {
+  cursor: pointer;
+  color: white;
+  background: #0d6efd;
+  padding: 5px 5px;
+  border: 1px solid #0d6efd;
+  border-radius: 5px;
+  transition: all ease-in-out .3s;
+  margin: 0.25em 0.25em;
+
+
+  &:hover {
+    border-color: #0d6efd;
+    background: #0b5ed7;
+  }
+
+  &--warning {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+
+    &:hover {
+      color: #fff;
+      background-color: #c82333;
+      border-color: #bd2130;
+      border-top-color: rgb(189, 33, 48);
+      border-right-color: rgb(189, 33, 48);
+      border-bottom-color: rgb(189, 33, 48);
+      border-left-color: rgb(189, 33, 48);
+    }
+  }
+
+  &--success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+
+    &:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+  }
+
+  &--normal {
+    color: #000000;
+    background-color: #ffffff;
+    border-color: #000000;
+    padding: 0px;
+
+    &:hover {
+      background-color: #f1eeee;
+      border-color: #f1eeee;
+    }
+
+    
+  }
+
+  &--icon {
+    color: #000000;
+    background-color: #c8c7fc;
+    border-color: #000000;
+    border-radius: 50%;
+    margin: 0.25em 0.25em;
+    padding: 5px 10px;
+
+    &:hover {
+      background-color: #bbbaf8;
+      border-color: #000000;
+    }
+
+    
+  }
+}
+
+.navigation {
+  display: flex;
+  
+}
+
+
+.dropdown {
+  display: flex;
+  align-items: center;
+  color: white;
+  margin: 0 auto;
+
+
+  &--outlined {
+    padding: 5px 5px 5px 25px;
+    border: 1px solid #c4c4c4;
+    border-radius: 4px;
+    background-color: #257cfd;
+  }
+}
+
