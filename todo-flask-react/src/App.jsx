@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import TodoList from "./Component/TodoList";
 import AddTodoForm from "./Component/AddTodoForm";
 import EditTodoForm from "./Component/EditTodoForm";
@@ -12,9 +7,8 @@ import Pagination from "./Component/Pagination";
 import Login from "./Component/Login";
 import Navbar from "./Component/Navbar";
 import Modal from "react-modal";
-
 import "./App.css";
-// Эта функция делает доступным модальное окно внутри приложения React
+
 Modal.setAppElement("#root");
 
 function App() {
@@ -23,6 +17,8 @@ function App() {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [editingTodo, setEditingTodo] = useState(null);
+  const [sortBy, setSortBy] = useState("id");
+  const [order, setOrder] = useState("asc");
 
   const onLogin = (username) => {
     localStorage.setItem("username", username);
@@ -48,22 +44,42 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch(`http://localhost:5000?page=${page}`)
+    fetch(
+      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+    )
       .then((response) => response.json())
       .then((data) => {
         setTodos(data.todos);
         setTotalPages(data.pagination.total_pages);
       })
       .catch((error) => console.error(error));
-  }, [page]);
+  }, [page, sortBy, order]);
 
-  const addTodo = (todo) => {
-    setTodos([todo, ...todos]);
+  const loadTodos = () => {
+    fetch(
+      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setTodos(data.todos);
+        setTotalPages(data.pagination.total_pages);
+      })
+      .catch((error) => console.error(error));
   };
+
+  useEffect(() => {
+    loadTodos();
+  }, [page, sortBy, order]);
 
   const toggleTodo = (changedTodo) => {
     fetch(`http://localhost:5000/${changedTodo.id}`, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -84,6 +100,7 @@ function App() {
   const removeTodo = (id) => {
     fetch(`http://localhost:5000/delete/${id}`, {
       method: "DELETE",
+      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
@@ -112,6 +129,7 @@ function App() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(updatedTodo),
+      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
@@ -130,9 +148,6 @@ function App() {
       });
   };
 
-  const [sortBy, setSortBy] = useState("id");
-  const [order, setOrder] = useState("asc");
-
   const handleSortBy = (newSortBy) => {
     // Если пользователь нажимает на текущую опцию сортировки, мы меняем порядок
     if (newSortBy === sortBy) {
@@ -146,16 +161,8 @@ function App() {
 
   const handleSortOrder = () => {
     // Переключаем порядок сортировки между 'asc' и 'desc'
-    setOrder(order === 'desc' ? 'asc' : 'desc');
+    setOrder(order === "desc" ? "asc" : "desc");
   };
-
-  useEffect(() => {
-    fetch(
-      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
-    ).then((response) => {
-      //...
-    });
-  }, [page, sortBy, order]);
 
   return (
     <Router>
@@ -176,12 +183,13 @@ function App() {
                   onSortOrder={handleSortOrder}
                 />
                 <h1>Мой менеджер задач</h1>
-                <AddTodoForm onNewTodo={addTodo} />
+                <AddTodoForm onNewTodo={loadTodos} />
                 <TodoList
                   todos={todos}
                   onToggleTodo={toggleTodo}
                   onRemoveTodo={removeTodo}
                   onEditTodo={setEditingTodo}
+                  token={token}
                 />
                 {editingTodo && (
                   <Modal

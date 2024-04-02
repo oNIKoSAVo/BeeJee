@@ -14,11 +14,19 @@ const Navbar = ({
 
   return (
     <div>
-      <span>Вы вошли в систему</span>
+      
       {loggedIn ? (
+        <>
+        <span>Вы вошли в систему</span>
         <button onClick={onLogout}>Выйти</button>
+        </>
+        
       ) : (
+        <>
+        <span>Вы не вошли в систему</span>
         <button onClick={() => navigate("/login")}>Войти</button>
+        </>
+       
       )}
       <br />
       <br />

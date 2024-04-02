@@ -20,8 +20,7 @@ from todo.models import ToDo, User, db
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, 
-  resources={r'*': {'origins': 'http://localhost:3000'}})
+    CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
     # CORS(app, resources={r"/*": {"methods": "*"}})
     app.config.from_pyfile("config.py")
     db.init_app(app)
@@ -105,7 +104,7 @@ def add():
 
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 @login_required
-@cross_origin()
+@cross_origin(supports_credentials=True)
 def edit_task(task_id):
     data = request.get_json()
     if not data or 'user_name' not in data or 'email' not in data or 'title' not in data:
@@ -167,11 +166,11 @@ def login():
         login_user(user, remember=True)
         return jsonify({'result': 'success'}), 200
     else:
-        return jsonify({'error': 'Invalid username/password combination'}), 401
+        return jsonify({'error': 'Неверная комбинация имени пользователя и пароля'}), 401
 
 
 @app.route("/logout")
 @cross_origin(supports_credentials=True)
 def logout():
     logout_user()
-    return redirect(url_for("home"))
+    return "Logout Successful"
