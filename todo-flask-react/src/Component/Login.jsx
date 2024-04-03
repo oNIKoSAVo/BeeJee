@@ -23,10 +23,9 @@ const Login = ({ onLogin }) => {
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: 'include',
       body: JSON.stringify(credentials),
     })
-      .then(async (response) => {
+      .then((response) => {
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.error);
@@ -34,7 +33,7 @@ const Login = ({ onLogin }) => {
         return response.json();
       })
       .then((data) => {
-        onLogin(credentials.username);
+        onLogin(data.access_token);
         navigate('/');
       })
       .catch((error) => {
