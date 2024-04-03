@@ -14,7 +14,7 @@ import "./App.css";
 ReactModal.setAppElement("#root");
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("username") !== null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [todos, setTodos] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
@@ -22,17 +22,16 @@ function App() {
   const [sortBy, setSortBy] = useState("id");
   const [order, setOrder] = useState("asc");
 
-  const onLogin = (username) => {
-    localStorage.setItem("username", username);
-    setToken(true);
+  const onLogin = (token) => {
+    localStorage.setItem("token", token);
+    setToken(token);
   };
   const onLogout = () => {
     fetch("https://asketasket.pythonanywhere.com/logout", {
-      credentials: "include", // Включаем отправку куки
     })
       .then(() => {
         // Удаляем юзернейм из локального хранилища и обновляем state
-        localStorage.removeItem("username");
+        localStorage.removeItem("token");
         setToken(false);
       })
       .catch((error) => console.error(error));
@@ -82,7 +81,6 @@ function App() {
   const toggleTodo = (changedTodo) => {
     fetch(`https://asketasket.pythonanywhere.com/update/${changedTodo.id}`, {
       method: "POST",
-      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
@@ -110,7 +108,9 @@ function App() {
   const removeTodo = (id) => {
     fetch(`https://asketasket.pythonanywhere.com/delete/${id}`, {
       method: "DELETE",
-      credentials: "include",
+      headers: {
+          'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
+        },
     })
       .then((response) => {
         if (!response.ok) {
