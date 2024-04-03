@@ -2,26 +2,27 @@ from functools import wraps
 from flask import (
     Flask,
     jsonify,
-    render_template,
     request,
     session,
-    url_for,
-    redirect,
-    flash,
 )
 from flask_cors import CORS, cross_origin
-from flask_login import login_required, login_user, logout_user, current_user
+
 from flask_migrate import Migrate
 from todo.functions.func import validate_todo
-from todo.forms import AddTaskForm, LoginForm
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity, jwt_required, get_jwt
+)
 
 from todo.models import ToDo, User, db
 
 
+
+
 def create_app():
     app = Flask(__name__)
+
     CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
-    # CORS(app, resources={r"/*": {"methods": "*"}})
     app.config.from_pyfile("config.py")
     db.init_app(app)
     return app
@@ -29,7 +30,12 @@ def create_app():
 
 app = create_app()
 migrate = Migrate(app, db)
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config['JWT_SECRET_KEY'] = '54wb54jbbkjCXZ&^666!bvcx1fsd554sd1*&^$0f'  # Change this!
+jwt = JWTManager(app)
 
+blacklist = set()
 
 def save_state_to_session(f):
     @wraps(f)
@@ -47,7 +53,6 @@ def save_state_to_session(f):
 @app.route("/", methods=["GET", "POST"])
 @cross_origin()
 def home():
-    form = AddTaskForm()
 
     sort_by = request.args.get('sort_by', default='id')
     order = request.args.get('order', default='asc')
@@ -109,7 +114,7 @@ def add():
 
 
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
-@login_required
+@jwt_required()
 @cross_origin(supports_credentials=True)
 def edit_task(task_id):
     data = request.get_json()
@@ -137,7 +142,7 @@ def edit_task(task_id):
 
 
 @app.route("/update/<int:todo_id>", methods=["POST"])
-@login_required
+@jwt_required()
 @cross_origin(supports_credentials=True)
 def update(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
@@ -151,7 +156,7 @@ def update(todo_id):
 
 
 @app.route("/delete/<int:todo_id>", methods=['DELETE'])
-@login_required
+@jwt_required()
 @cross_origin(supports_credentials=True)
 def delete(todo_id):
     todo = ToDo.query.filter_by(id=todo_id).first()
@@ -164,22 +169,25 @@ def delete(todo_id):
 @app.route("/login", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def login():
-    if current_user.is_authenticated:
-       return jsonify({'result': 'success', 'data': 'Пользователь уже авторизирован!'}), 200
     data = request.get_json()
     if not data or 'username' not in data or 'password' not in data:
         return jsonify({'error': 'Bad Request'}), 400    
 
     user = User.query.filter_by(username=data['username']).first()
     if user and user.check_password(data['password']):
-        login_user(user, remember=True)
-        return jsonify({'result': 'success'}), 200
+        access_token = create_access_token(identity=user.username)
+        return jsonify(access_token=access_token), 200
     else:
         return jsonify({'error': 'Неверная комбинация имени пользователя и пароля'}), 401
+    
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    return jwt_payload["jti"] in blacklist
 
-
-@app.route("/logout")
-@cross_origin(supports_credentials=True)
+@app.route('/logout', methods=['DELETE'])
+@jwt_required()
 def logout():
-    logout_user()
-    return "Logout Successful"
+    jwt_payload = get_jwt()
+    jti = jwt_payload['jti']
+    blacklist.add(jti)
+    return jsonify({"logout": True}), 200

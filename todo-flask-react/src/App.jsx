@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import TodoList from "./Component/TodoList";
 import AddTodoForm from "./Component/AddTodoForm";
 import EditTodoForm from "./Component/EditTodoForm";
@@ -14,26 +14,27 @@ import "./App.css";
 ReactModal.setAppElement("#root");
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("username") !== null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [todos, setTodos] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [editingTodo, setEditingTodo] = useState(null);
   const [sortBy, setSortBy] = useState("id");
   const [order, setOrder] = useState("asc");
+  const navigate = useNavigate();
 
-  const onLogin = (username) => {
-    localStorage.setItem("username", username);
-    setToken(true);
+  const onLogin = (token) => {
+    localStorage.setItem("token", token);
+    setToken(token);
   };
   const onLogout = () => {
     fetch("http://localhost:5000/logout", {
-      credentials: "include", // Включаем отправку куки
+      method: "DELETE",
     })
       .then(() => {
         // Удаляем юзернейм из локального хранилища и обновляем state
-        localStorage.removeItem("username");
-        setToken(false);
+        localStorage.removeItem("token");
+        setToken(null);
       })
       .catch((error) => console.error(error));
   };
@@ -72,20 +73,23 @@ function App() {
       })
       .catch((error) => console.error(error));
   };
-
+/* eslint-disable */
   useEffect(() => {
     loadTodos();
   }, [page, sortBy, order]);
+/* eslint-enable */
 
   const toggleTodo = (changedTodo) => {
     fetch(`http://localhost:5000/update/${changedTodo.id}`, {
       method: "POST",
-      credentials: "include",
+      headers: {
+        'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
+      },
     })
       .then((response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            window.location.href = "/login";
+            navigate('/login');
             return;
           }
           throw new Error("Произошла ошибка при изменении!");
@@ -102,18 +106,21 @@ function App() {
       .catch((error) => {
         console.log(error);
         alert("Произошла ошибка при изменении ToDo");
+        navigate('/login');
       });
   };
 
   const removeTodo = (id) => {
     fetch(`http://localhost:5000/delete/${id}`, {
       method: "DELETE",
-      credentials: "include",
+      headers: {
+        'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
+      },
     })
       .then((response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            window.location.href = "/login";
+            navigate('/login');
             return;
           }
           throw new Error("Network response was not ok");
@@ -126,15 +133,15 @@ function App() {
       .then((data) => {
         if (data.result === "success") {
           loadTodos();
-
-         
         } else {
           alert("Произошла ошибка при удалении ToDo");
+          navigate('/login');
         }
       })
       .catch((error) => {
         console.error("Ошибка:", error);
         alert("Произошла ошибка при удалении ToDo");
+        navigate('/login');
       });
   };
 
@@ -143,29 +150,22 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`,        
       },
       body: JSON.stringify(updatedTodo),
-      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            window.location.href = "/login";
+            navigate('/login');
             return;
           }
           throw new Error("Network response was not ok");
         } else {
-          alert("Задача успешно отредактирована!")
+          alert("Задача успешно отредактирована!");
+          
         }
         return response.json();
-      })
-
-     
-      .then((data) => {
-        const updatedTodos = todos.map((todo) =>
-          todo.id === data.id ? { ...todo, ...data } : todo
-        );
-        setTodos(updatedTodos);
       })
       .then((data) => {
         const updatedTodos = todos.map((todo) =>
@@ -175,6 +175,8 @@ function App() {
       })
       .catch((error) => {
         console.log(error);
+        alert("Произошла ошибка при изменении ToDo");
+        navigate('/login');
       });
   };
 

@@ -26,19 +26,20 @@ const Login = ({ onLogin }) => {
       credentials: 'include',
       body: JSON.stringify(credentials),
     })
-      .then(async (response) => {
+      .then((response) => {
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error);
+          const error = response.json();
+          setError(error);
+          // throw new Error(error.error);
         }
         return response.json();
       })
       .then((data) => {
-        onLogin(credentials.username);
+        onLogin(data.access_token);
         navigate('/');
       })
       .catch((error) => {
-        setError(error.message);
+        setError("Неверная комбинация имени пользователя и пароля");
       });
   };
 
