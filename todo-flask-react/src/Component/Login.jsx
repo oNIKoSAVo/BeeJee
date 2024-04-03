@@ -19,7 +19,7 @@ const Login = ({ onLogin }) => {
     
 
     fetch("https://asketasket.pythonanywhere.com/login", {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
