@@ -38,7 +38,7 @@ function App() {
       .catch((error) => console.error(error));
   };
   useEffect(() => {
-    fetch("http://localhost:5000")
+    fetch("https://asketasket.pythonanywhere.com")
       .then((response) => response.json())
       .then((data) => setTodos(data.todos))
       .catch((error) => console.error(error));
