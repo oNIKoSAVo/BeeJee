@@ -27,7 +27,7 @@ const Login = ({ onLogin }) => {
     })
       .then((response) => {
         if (!response.ok) {
-          const error = await response.json();
+          const error = response.json();
           throw new Error(error.error);
         }
         return response.json();
