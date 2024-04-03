@@ -73,11 +73,12 @@ function App() {
       .catch((error) => console.error(error));
   };
   
-// eslint-disable-next-line react-hooks/exhaustive-deps
+/* eslint-disable */
   useEffect(() => {
     loadTodos();
   }, [page, sortBy, order]);
-
+/* eslint-enable */
+  
   const toggleTodo = (changedTodo) => {
     fetch(`http://localhost:5000/update/${changedTodo.id}`, {
       method: "POST",
