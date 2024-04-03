@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {Routes, Route } from "react-router-dom";
 import TodoList from "./Component/TodoList";
 import AddTodoForm from "./Component/AddTodoForm";
 import EditTodoForm from "./Component/EditTodoForm";
@@ -75,7 +75,7 @@ function App() {
 
   useEffect(() => {
     loadTodos();
-  }, [page, sortBy, order]);
+  }, [page, sortBy, order, loadTodos]);
 
   const toggleTodo = (changedTodo) => {
     fetch(`http://localhost:5000/update/${changedTodo.id}`, {
