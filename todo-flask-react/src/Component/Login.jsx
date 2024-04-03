@@ -18,19 +18,17 @@ const Login = ({ onLogin }) => {
 
     
 
-    fetch("http://localhost:5000/login", {
+    fetch("https://asketasket.pythonanywhere.com/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: 'include',
       body: JSON.stringify(credentials),
     })
       .then((response) => {
         if (!response.ok) {
           const error = response.json();
-          setError(error);
-          // throw new Error(error.error);
+          throw new Error(error.error);
         }
         return response.json();
       })

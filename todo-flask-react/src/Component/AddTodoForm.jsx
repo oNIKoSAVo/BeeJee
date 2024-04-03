@@ -22,7 +22,7 @@ const AddTodoForm = ({ onNewTodo }) => {
       return;
     }
 
-    fetch("http://localhost:5000/add", {
+    fetch("https://asketasket.pythonanywhere.com/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

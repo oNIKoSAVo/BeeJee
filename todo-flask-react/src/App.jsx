@@ -28,8 +28,7 @@ function App() {
     setToken(token);
   };
   const onLogout = () => {
-    fetch("http://localhost:5000/logout", {
-      method: "DELETE",
+    fetch("https://asketasket.pythonanywhere.com/logout", {
     })
       .then(() => {
         // Удаляем юзернейм из локального хранилища и обновляем state
@@ -39,7 +38,7 @@ function App() {
       .catch((error) => console.error(error));
   };
   useEffect(() => {
-    fetch("http://localhost:5000")
+    fetch("https://asketasket.pythonanywhere.com")
       .then((response) => response.json())
       .then((data) => setTodos(data.todos))
       .catch((error) => console.error(error));
@@ -47,7 +46,7 @@ function App() {
 
   useEffect(() => {
     fetch(
-      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+      `https://asketasket.pythonanywhere.com/?page=${page}&sort_by=${sortBy}&order=${order}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -59,7 +58,7 @@ function App() {
 
   const loadTodos = () => {
     fetch(
-      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+      `https://asketasket.pythonanywhere.com/?page=${page}&sort_by=${sortBy}&order=${order}`
     )
       .then((response) => {
         if (!response.ok) {
@@ -73,6 +72,7 @@ function App() {
       })
       .catch((error) => console.error(error));
   };
+
 /* eslint-disable */
   useEffect(() => {
     loadTodos();
@@ -80,7 +80,7 @@ function App() {
 /* eslint-enable */
 
   const toggleTodo = (changedTodo) => {
-    fetch(`http://localhost:5000/update/${changedTodo.id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/update/${changedTodo.id}`, {
       method: "POST",
       headers: {
         'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
@@ -111,10 +111,10 @@ function App() {
   };
 
   const removeTodo = (id) => {
-    fetch(`http://localhost:5000/delete/${id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/delete/${id}`, {
       method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
+        'Authorization': `Bearer ${token}`,  
       },
     })
       .then((response) => {
@@ -146,11 +146,11 @@ function App() {
   };
 
   const editTodo = (id, updatedTodo) => {
-    fetch(`http://localhost:5000/edit/${id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/edit/${id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,        
+        'Authorization': `Bearer ${token}`,  
       },
       body: JSON.stringify(updatedTodo),
     })
@@ -162,23 +162,11 @@ function App() {
           }
           throw new Error("Network response was not ok");
         } else {
-          alert("Задача успешно отредактирована!");
-          
+          alert("Задача успешно отредактирована!")
         }
         return response.json();
       })
-      .then((data) => {
-        const updatedTodos = todos.map((todo) =>
-          todo.id === data.id ? { ...todo, ...data } : todo
-        );
-        setTodos(updatedTodos);
-      })
-      .catch((error) => {
-        console.log(error);
-        alert("Произошла ошибка при изменении ToDo");
-        navigate('/login');
-      });
-  };
+    };
 
   const handleSortBy = (newSortBy) => {
     if (newSortBy === sortBy) {
