@@ -75,7 +75,7 @@ function App() {
 
   useEffect(() => {
     loadTodos();
-  }, [page, sortBy, order, loadTodos]);
+  }, [page, sortBy, order]);
 
   const toggleTodo = (changedTodo) => {
     fetch(`http://localhost:5000/update/${changedTodo.id}`, {
