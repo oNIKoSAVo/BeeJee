@@ -27,7 +27,7 @@ function App() {
     setToken(true);
   };
   const onLogout = () => {
-    fetch("http://localhost:5000/logout", {
+    fetch("https://asketasket.pythonanywhere.com/logout", {
       credentials: "include", // Включаем отправку куки
     })
       .then(() => {
@@ -46,7 +46,7 @@ function App() {
 
   useEffect(() => {
     fetch(
-      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+      `https://asketasket.pythonanywhere.com/?page=${page}&sort_by=${sortBy}&order=${order}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -58,7 +58,7 @@ function App() {
 
   const loadTodos = () => {
     fetch(
-      `http://localhost:5000/?page=${page}&sort_by=${sortBy}&order=${order}`
+      `https://asketasket.pythonanywhere.com/?page=${page}&sort_by=${sortBy}&order=${order}`
     )
       .then((response) => {
         if (!response.ok) {
@@ -80,7 +80,7 @@ function App() {
 /* eslint-enable */
   
   const toggleTodo = (changedTodo) => {
-    fetch(`http://localhost:5000/update/${changedTodo.id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/update/${changedTodo.id}`, {
       method: "POST",
       credentials: "include",
     })
@@ -108,7 +108,7 @@ function App() {
   };
 
   const removeTodo = (id) => {
-    fetch(`http://localhost:5000/delete/${id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/delete/${id}`, {
       method: "DELETE",
       credentials: "include",
     })
@@ -141,7 +141,7 @@ function App() {
   };
 
   const editTodo = (id, updatedTodo) => {
-    fetch(`http://localhost:5000/edit/${id}`, {
+    fetch(`https://asketasket.pythonanywhere.com/edit/${id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
