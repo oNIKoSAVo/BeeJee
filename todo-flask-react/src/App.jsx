@@ -147,26 +147,22 @@ function App() {
 
   const editTodo = (id, updatedTodo) => {
     fetch(`https://asketasket.pythonanywhere.com/edit/${id}`, {
-      method: "POST",
+           method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,  
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updatedTodo),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          if (response.status === 401) {
-            navigate('/login');
-            return;
-          }
-          throw new Error("Network response was not ok");
-        } else {
-          alert("Задача успешно отредактирована!")
-        }
-        return response.json();
-      })
-    };
+    }).then((response) => {
+      if (!response.ok) {
+        alert("Произошла ошибка при изменении ToDo");
+        navigate("/login");
+      } else {
+        alert("Задача успешно отредактирована!");
+      }
+      return response.json();
+    });
+  };
 
   const handleSortBy = (newSortBy) => {
     if (newSortBy === sortBy) {
