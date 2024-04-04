@@ -28,8 +28,7 @@ function App() {
     setToken(token);
   };
   const onLogout = () => {
-    fetch("https://asketasket.pythonanywhere.com/logout", {
-    })
+    fetch("https://asketasket.pythonanywhere.com/logout", {})
       .then(() => {
         // Удаляем юзернейм из локального хранилища и обновляем state
         localStorage.removeItem("token");
@@ -73,23 +72,23 @@ function App() {
       .catch((error) => console.error(error));
   };
 
-/* eslint-disable */
+  /* eslint-disable */
   useEffect(() => {
     loadTodos();
   }, [page, sortBy, order]);
-/* eslint-enable */
+  /* eslint-enable */
 
   const toggleTodo = (changedTodo) => {
     fetch(`https://asketasket.pythonanywhere.com/update/${changedTodo.id}`, {
       method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,  // Затем добавить его в заголовки
+        Authorization: `Bearer ${token}`, // Затем добавить его в заголовки
       },
     })
       .then((response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            navigate('/login');
+            navigate("/login");
             return;
           }
           throw new Error("Произошла ошибка при изменении!");
@@ -106,7 +105,7 @@ function App() {
       .catch((error) => {
         console.log(error);
         alert("Произошла ошибка при изменении ToDo");
-        navigate('/login');
+        navigate("/login");
       });
   };
 
@@ -114,19 +113,18 @@ function App() {
     fetch(`https://asketasket.pythonanywhere.com/delete/${id}`, {
       method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${token}`,  
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            navigate('/login');
+            navigate("/login");
             return;
           }
           throw new Error("Network response was not ok");
-        }
-        else {
-          alert("Задача успешно удалена!")
+        } else {
+          alert("Задача успешно удалена!");
         }
         return response.json();
       })
@@ -135,13 +133,13 @@ function App() {
           loadTodos();
         } else {
           alert("Произошла ошибка при удалении ToDo");
-          navigate('/login');
+          navigate("/login");
         }
       })
       .catch((error) => {
         console.error("Ошибка:", error);
         alert("Произошла ошибка при удалении ToDo");
-        navigate('/login');
+        navigate("/login");
       });
   };
 
@@ -150,23 +148,19 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,  
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updatedTodo),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          if (response.status === 401) {
-            navigate('/login');
-            return;
-          }
-          throw new Error("Network response was not ok");
-        } else {
-          alert("Задача успешно отредактирована!")
-        }
-        return response.json();
-      })
-    };
+    }).then((response) => {
+      if (!response.ok) {
+        alert("Произошла ошибка при изменении ToDo");
+        navigate("/login");
+      } else {
+        alert("Задача успешно отредактирована!");
+      }
+      return response.json();
+    });
+  };
 
   const handleSortBy = (newSortBy) => {
     if (newSortBy === sortBy) {

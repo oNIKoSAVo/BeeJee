@@ -11,7 +11,7 @@ from flask_migrate import Migrate
 from todo.functions.func import validate_todo
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
-    get_jwt_identity, jwt_required, get_jwt
+     jwt_required, get_jwt
 )
 
 from todo.models import ToDo, User, db
@@ -21,7 +21,6 @@ from todo.models import ToDo, User, db
 
 def create_app():
     app = Flask(__name__)
-
     CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
     app.config.from_pyfile("config.py")
     db.init_app(app)
@@ -30,11 +29,7 @@ def create_app():
 
 app = create_app()
 migrate = Migrate(app, db)
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-app.config['JWT_SECRET_KEY'] = '54wb54jbbkjCXZ&^666!bvcx1fsd554sd1*&^$0f'  # Change this!
 jwt = JWTManager(app)
-
 blacklist = set()
 
 def save_state_to_session(f):
