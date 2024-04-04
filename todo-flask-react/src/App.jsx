@@ -145,7 +145,7 @@ function App() {
 
   const editTodo = (id, updatedTodo) => {
     fetch(`https://asketasket.pythonanywhere.com/edit/${id}`, {
-      method: "POST",
+           method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
