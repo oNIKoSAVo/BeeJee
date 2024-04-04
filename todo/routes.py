@@ -181,6 +181,7 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
 
 @app.route('/logout', methods=['DELETE'])
 @jwt_required()
+@cross_origin(supports_credentials=True)
 def logout():
     jwt_payload = get_jwt()
     jti = jwt_payload['jti']

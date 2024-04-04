@@ -28,7 +28,12 @@ function App() {
     setToken(token);
   };
   const onLogout = () => {
-    fetch("https://asketasket.pythonanywhere.com/logout", {})
+    fetch("https://asketasket.pythonanywhere.com/logout", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`, // Затем добавить его в заголовки
+      },
+    })
       .then(() => {
         // Удаляем юзернейм из локального хранилища и обновляем state
         localStorage.removeItem("token");
@@ -145,7 +150,7 @@ function App() {
 
   const editTodo = (id, updatedTodo) => {
     fetch(`https://asketasket.pythonanywhere.com/edit/${id}`, {
-           method: "POST",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
